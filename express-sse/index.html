@@ -1,0 +1,19 @@
+<html>
+    <head></head>
+    <body>
+        <h1>Express SSE</h1>
+        <div id="sse"></div>
+        <script>
+            var source = new EventSource('/events');
+            source.onmessage = function (event) {
+                console.log(event);
+                document.getElementById('sse').innerHTML += event.data + '<br>';
+            };
+            //message error
+            source.addEventListener('close', function (event) {
+                console.log(event);
+                source.close();
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <title>Reports</title>
+  </head>
+  <body>
+    <h1>Relatórios</h1>
+    <ul id="reports">
+      {{#each reports}}
+        <li>
+          <p id="report-{{this.id}}-filename">
+            Arquivo:{{this.filename}}
+          </p>
+          <p>
+            Data:{{this.created_at}}
+          </p>
+          <p id="report-{{this.id}}-status">
+            Status: {{this.status}}
+          </p>
+        </li>
+      {{/each}}
+    </ul>
+    <button type="button" onclick="createReport()">
+      Criar
+    </button>
+  </body>
+  <script>
+
+    let countEventSources = 0;
+
+    async function createReport(){
+      if(countEventSources === 6 ){
+          alert('Limite de relatórios atingido, aguarde a finalização de algum relatório para criar um novo.');
+          return;
+      }
+      countEventSources++;
+      
+      const res = await fetch('/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      const newReport = await res.json();
+        document.getElementById('reports').innerHTML = `
+          <li>
+            <p id="report-${newReport.id}-filename">
+              Arquivo: ${newReport.filename}
+            </p>
+            <p>
+              Data: ${newReport.created_at}
+            </p>
+            <p id="report-${newReport.id}-status">
+              Status: ${newReport.status}
+            </p>
+          </li>
+        ` + document.getElementById('reports').innerHTML;
+      subscribeEvents(newReport.id);
+    }
+
+    function subscribeEvents(reportId){
+      console.log('subscribing to events');
+      const eventSource = new EventSource(`/reports/${reportId}/events`);
+      eventSource.onmessage = (event) => {
+        console.log(event);
+        const updatedReport = JSON.parse(event.data);
+        document.getElementById(`report-${reportId}-status`).innerHTML = `Status: ${updatedReport.status}`;
+        document.getElementById(`report-${reportId}-filename`).innerHTML = `Arquivo: ${updatedReport.filename}`;
+        if(updatedReport.status === 'DONE' || updatedReport.status === 'ERROR'){
+          eventSource.close();
+          delete eventSource;
+          countEventSources--;
+        }
+
+      }
+      
+    }
+  </script>
+</html>
