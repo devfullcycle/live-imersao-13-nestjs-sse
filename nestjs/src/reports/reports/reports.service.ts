@@ -3,7 +3,6 @@ import { PrismaService } from '../../prisma/prisma/prisma.service';
 import { Status } from '@prisma/client';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ReportsService {
@@ -11,7 +10,6 @@ export class ReportsService {
     private prismaService: PrismaService,
     @InjectQueue('reports')
     private reportsQueue: Queue,
-    private eventEmitter: EventEmitter2,
   ) {}
 
   all() {
@@ -64,7 +62,7 @@ export class ReportsService {
         status: randomStatus,
       },
     });
-    this.eventEmitter.emit('report.finished', report);
+    this.reportsQueue.emit('report.finished', report);
   }
 }
 

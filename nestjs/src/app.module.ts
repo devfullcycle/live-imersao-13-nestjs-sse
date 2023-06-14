@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { ReportsModule } from './reports/reports.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { BullModule } from '@nestjs/bull';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -16,7 +15,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         port: 6379,
       },
     }),
-    EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

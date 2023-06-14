@@ -13,13 +13,15 @@ import { ReportsService } from './reports.service';
 import { Observable, of } from 'rxjs';
 import { Report, Status } from '@prisma/client';
 import { Response } from 'express';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bull';
 
 @Controller('reports')
 export class ReportsController {
   constructor(
     private reportsService: ReportsService,
-    private eventEmitter: EventEmitter2,
+    @InjectQueue('reports')
+    private reportsQueue: Queue,
   ) {}
 
   @Get('view')
@@ -78,11 +80,11 @@ export class ReportsController {
       };
 
       // Add the event listener to the event emitter
-      this.eventEmitter.on('report.finished', eventListener);
+      this.reportsQueue.on('report.finished', eventListener);
 
       // Clean up the event listener when the observable is unsubscribed
       return () => {
-        this.eventEmitter.off('report.finished', eventListener);
+        this.reportsQueue.off('report.finished', eventListener);
       };
     });
 
