@@ -49,9 +49,10 @@ export class ReportsService {
         status: Status.PROCESSING,
       },
     });
+
     await sleep(Math.random() * 10000);
     const randomStatus = Math.random() > 0.5 ? Status.DONE : Status.ERROR;
-    await this.prismaService.report.update({
+    const report = await this.prismaService.report.update({
       where: {
         id: reportId,
       },
@@ -61,6 +62,7 @@ export class ReportsService {
         status: randomStatus,
       },
     });
+    this.reportsQueue.emit('report.finished', report);
   }
 }
 
